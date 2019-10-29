@@ -38,7 +38,7 @@ repeticiones = 100 # Number of waveforms for the same delay value
 
 #df = pd.read_csv ( fileName, sep=" ", header=None, skiprows=1 )
 sstoutfb = pd.read_csv ( fileName, sep=" ", header=None,nrows=1 )
-print(df)
+#print(df)
 
 
 total= int(rango*repeticiones)
@@ -48,7 +48,7 @@ totalWindows=12
 nmbrWindows = 4
 print(len(df[0]))
 
-print(np.arange(startWindow*32,totalWindows*32,1 ))
+#print(np.arange(startWindow*32,totalWindows*32,1 ))
 #df['xx'] = np.arange(startWindow*32,totalWindows*32,1 )
 #df[0].plot(x='xx')
 fig= plt.figure(num=None, figsize=(8,6), dpi=80)
@@ -58,7 +58,7 @@ fontsizeAxis=28
 std3windowsList = list()
 maxList = list()
 maxPos = list()
-print(df)
+#print(df)
 
 
 lblsize =16
@@ -67,12 +67,13 @@ plt.rc('ytick', labelsize=lblsize)
 
 maximums= pd.DataFrame()
 
+
 for i in range(0,rango,1):
     ax = fig.add_subplot(1,1,1+i)
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5) 
     for	k in range(i,total,rango):
         std_3windows = 0
-        plt.plot(list(df.index), df[k], '-o', markersize=4) 
+        plt.plot(list(df.index), df4[k], '-o', markersize=4) 
         
 
 
@@ -96,7 +97,7 @@ for i in range(0,rango,1):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,verticalalignment='top', bbox=props)
 #print('std3list={}'.format(np.asarray(std3windowsList).fig.text(0.5, 0.04, 'Time [ns]', ha='center', fontsize=fontsizeAxis)
 #print('std3list={}'.format(np.asarray(std3windowsList).fig.text(0.08, 0.5, 'ADC counts', va='center', rotation='vertical', fontsize=fontsizeAxis)
-fig.text(.4, .95, 'Pedestal substracted data, same delay, 10 times', ha='center', fontsize=16)
+#fig.text(.4, .95, 'Pedestal substracted data, same delay, 10 times', ha='center', fontsize=16)
 # Option 2
 # TkAgg backend
 #manager = plt.get_current_fig_manager()
@@ -129,7 +130,7 @@ plt.errorbar(3, 0.030343477668845313, yerr = 0.0010147102588984284, fmt = 'o', c
 def sinefit(x,a,b,c,d):
     return a*np.sin(b*x + c) + d
 
-print(df.shape)
+#print(df.shape)
 
 win_len=32
 s_start=255 #sample start fit
@@ -142,11 +143,27 @@ sig=np.zeros(nobs) + 1.385 #assuming constant uncertainty for every sample in y 
 freqlistf = list()
 periodlist = list()
 
+
+
 #for i in range(0,repeticiones,1):
-for i in range(0,1,1):
-    popt, pocv = curve_fit(sinefit, x, df2[i][s_start:s_end].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True)
+for i in range(0,100,1):
+    ydata=df6[i][s_start:s_end].values
+    popt, pocv = curve_fit(sinefit, x, ydata, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True)
     freqlistf.append(popt[1]*1000/(2*np.pi))
     periodlist.append(1/(popt[1]/(2*np.pi)))
+
+plt.subplot(211)
+plt.title('Sine fit over Data', fontsize= 30)
+plt.plot(x, sinefit(x, *popt), 'r-', label='curve fit ')
+plt.scatter(x, ydata, alpha=0.8, c='blue', edgecolors='none', s=30, label='sine data')
+plt.legend(loc = 'upper left')
+plt.xlim(s_start,s_end)
+plt.ylim(-200,200)
+plt.yticks(np.arange(-100,201,100))   
+plt.xlabel('Time [ns]', fontsize= 20)
+plt.ylabel('ADC', fontsize= 20)
+plt.grid(True, linestyle='--', linewidth=1)
+
 meanf =  np.mean(freqlistf)
 meanp = np.mean(periodlist)
 print('mean fit freq [MHz] = ', meanf)
@@ -154,9 +171,9 @@ print('mean fit per [ns] =', meanp)
 errorp = np.std(periodlist)
 errorf = (np.std(freqlistf))
 print('error period [ns] =',errorf)
-print('error frequency [GHz] =',errorp)
+print('error frequency [MHz] =',errorp)
 
-chi = ( df2[i][s_start:s_end].values - sinefit(x, *popt)) / y_uncert
+chi = ( ydata - sinefit(x, *popt)) / y_uncert
 chi2 = (chi ** 2).sum()
 dof = len(x) - len(popt)
 factor = (chi2 / dof)
@@ -166,13 +183,22 @@ print('degres of freedom = ',dof)
 print('chi^2/dof = ',factor)
 print('pcov /(chi^2/dof) = ',np.sqrt(pcov_sigma[0, 0]))
 
-plt.figure()
+plt.subplot(212)
+#plt.figure()
 rc('font', size = 14)
-plt.title('Frequency Histogram (sstoutfb = 63)')
+plt.title('Frequency Histogram 100 events (sstoutfb = 63)', fontsize= 30)
 plt.hist(freqlistf,10)
-plt.xlabel('Frequency [MHz]')
-plt.ylabel('# instances')
+txt_mean= 'mean [Mhz]=' + str(round(meanf,3))
+txt_std= 'std [Mhz]=' + str(round(errorf,3))
+plt.text(min(freqlistf), 20, txt_mean, {'color': 'black', 'fontsize': 20})
+plt.text(min(freqlistf), 16, txt_std, {'color': 'black', 'fontsize': 20})
+plt.xlabel('Frequency [MHz]', fontsize= 20)
+plt.ylabel('# instances', fontsize=20)
 
+plt.show()
+
+"""
+#plot histogram
 plt.figure()
 rc('font', size = 14)
 plt.title('Period Histogram (sstoutfb = 63)')
@@ -180,6 +206,8 @@ plt.hist(periodlist,10)
 plt.xlabel('Period [ns]')
 plt.ylabel('# instances')
 plt.show()
+
+"""
 
 
 
@@ -227,6 +255,7 @@ plt.errorbar(1, meanf, yerr = errorf, fmt = 'o', label = 'fit')
 plt.errorbar(2, meanzx, yerr = errorzx, fmt = 'o', label = 'zero xing')
 plt.legend(loc = 'upper left')
 
+
 #Display sine data + fit
 
 def sinefit(x,a,b,c,d):
@@ -273,27 +302,56 @@ plt.legend()
 #Plot all (slightly nicer way)
 def sinefit (x,a,b,c,d):
     return a*np.sin(b*x+c) + d
-x = np.arange(220, 340, 1)
+x = np.arange(s_start, s_end, 1)
 ticks1 = np.arange(8)
 rc('font', size=15)
-plt.figure()
-plt.title('Mean Frequencies and STD of Varied SSTOUTFB')
+
+plt.subplot(211)
+plt.title('Mean Frequencies versus SSTOUTFB')
 plt.xlabel('SSTOUTFB Value')
 plt.ylabel('Frequency [MHz]')
+
 plt.xticks(ticks1, ('', '57', '58', '59', '60', '61', '62', '63'))
+plt.grid(True, linestyle='--', linewidth=1)
+
 dflist = [df,df1,df2,df3,df4,df5,df6]
 n = 57
 track = 1
 for j in dflist:
     freqlist1 = []
     for i in range(0,repeticiones,1):
-        popt, pocv = curve_fit(sinefit, x, j[i][220:340].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)) )
+        popt, pocv = curve_fit(sinefit, x, j[i][s_start:s_end].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True )
         freqlist1 = np.append(freqlist1, popt[1]*1000/(2*np.pi))
-    plt.errorbar(track, np.mean(freqlist1) , yerr = np.std(freqlist1), fmt = 'o', label = 'SSTOUTFB %.2f' %n)
+    plt.subplot(211)
+    plt.errorbar(track, np.mean(freqlist1) , yerr = np.std(freqlist1), fmt = 'o', label = 'Frequency versus FB %.2f',)
+
     n = n+1
     track = track+1
 plt.legend
-plt.show() 
-"""
+plt.tight_layout()
 
+n = 57
+track = 1
+plt.subplot(212)
+plt.title('STD of mean Freq versus SSTOUTFB')
+plt.xlabel('SSTOUTFB Value')
+plt.ylabel('Frequency [MHz]')
+plt.xticks(ticks1, ('', '57', '58', '59', '60', '61', '62', '63'))
+plt.grid(True, linestyle='--', linewidth=1)
+
+for j in dflist:
+    freqlist1 = []
+    for i in range(0,repeticiones,1):
+        popt, pocv = curve_fit(sinefit, x, j[i][s_start:s_end].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True )
+        freqlist1 = np.append(freqlist1, popt[1]*1000/(2*np.pi))
+    plt.subplot(212)
+    plt.errorbar(track, np.std(freqlist1) , yerr = 0, fmt = 'o', label = 'Error')
+
+    n = n+1
+    track = track+1
+plt.legend
+plt.tight_layout()
+plt.show() 
+
+"""
 
