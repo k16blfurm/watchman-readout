@@ -72,7 +72,7 @@ for i in range(0,rango,1):
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5) 
     for	k in range(i,total,rango):
         std_3windows = 0
-        plt.plot(list(df.index), df[k], '-o', markersize=4) 
+        plt.plot(list(df.index), df4[k], '-o', markersize=4) 
         
 
 
@@ -269,11 +269,11 @@ plt.xticks(np.arange(220,340,20))
 plt.xlabel('Time [ns]') 
 plt.legend()
 
-
+"""
 #Plot all (slightly nicer way)
 def sinefit (x,a,b,c,d):
     return a*np.sin(b*x+c) + d
-x = np.arange(220, 340, 1)
+x = np.arange(s_start, s_end, 1)
 ticks1 = np.arange(8)
 rc('font', size=15)
 plt.figure()
@@ -287,13 +287,13 @@ track = 1
 for j in dflist:
     freqlist1 = []
     for i in range(0,repeticiones,1):
-        popt, pocv = curve_fit(sinefit, x, j[i][220:340].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)) )
+        popt, pocv = curve_fit(sinefit, x, j[i][s_start:s_end].values, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True )
         freqlist1 = np.append(freqlist1, popt[1]*1000/(2*np.pi))
-    plt.errorbar(track, np.mean(freqlist1) , yerr = np.std(freqlist1), fmt = 'o', label = 'SSTOUTFB %.2f' %n)
+    plt.errorbar(track, np.std(freqlist1) , yerr = 0, fmt = 'o', label = 'SSTOUTFB %.2f' %n)
     n = n+1
     track = track+1
 plt.legend
 plt.show() 
-"""
+
 
 
