@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
+from scipy import stats 
 from scipy.optimize import curve_fit
 from matplotlib import rc
+
 fileName = 'sinewave_sstoutfb_57.txt'
 df = pd.read_csv ( fileName, sep=" ", header=None, skiprows=1 )
 
@@ -147,11 +149,12 @@ periodlist = list()
 
 #for i in range(0,repeticiones,1):
 for i in range(0,100,1):
-    ydata=df6[i][s_start:s_end].values
+    ydata=df2[i][s_start:s_end].values
     popt, pocv = curve_fit(sinefit, x, ydata, bounds = ((160,0,-np.inf,-np.inf),(np.inf,0.4,np.inf,np.inf)), sigma=sig, absolute_sigma=True)
     freqlistf.append(popt[1]*1000/(2*np.pi))
     periodlist.append(1/(popt[1]/(2*np.pi)))
 
+"""
 plt.subplot(211)
 plt.title('Sine fit over Data', fontsize= 30)
 plt.plot(x, sinefit(x, *popt), 'r-', label='curve fit ')
@@ -196,18 +199,36 @@ plt.xlabel('Frequency [MHz]', fontsize= 20)
 plt.ylabel('# instances', fontsize=20)
 
 plt.show()
-
 """
+
 #plot histogram
+meanp = round(np.mean(periodlist),3)
+errorp = round(np.std(periodlist),3)
+
 plt.figure()
 rc('font', size = 14)
-plt.title('Period Histogram (sstoutfb = 63)')
-plt.hist(periodlist,10)
+plt.title('TARGETC Timing Resolution (sstoutfb = 59)')
+plt.hist(periodlist,25)
 plt.xlabel('Period [ns]')
 plt.ylabel('# instances')
+
+# find minimum and maximum of xticks, so we know
+# where we should compute theoretical distribution
+xt = plt.xticks()[0]  
+xmin, xmax = min(xt), max(xt)  
+lnspc = np.linspace(xmin, xmax, len(periodlist))
+
+# lets try the normal distribution first
+m, s = stats.norm.fit(periodlist) # get mean and standard deviation  
+pdf_g = stats.norm.pdf(lnspc, m, s) # now get theoretical values in our interval 
+txt_mean= 'mean [ns]=' + str(round(m,3))
+txt_std= 'std [ns]=' + str(round(s,3))
+plt.plot(lnspc, pdf_g, label="Norm") # plot it
+plt.text(max(periodlist), 22, '100 entries', {'color': 'black', 'fontsize': 20})
+plt.text(max(periodlist), 20, txt_mean, {'color': 'black', 'fontsize': 20})
+plt.text(max(periodlist), 18, txt_std, {'color': 'black', 'fontsize': 20})
 plt.show()
 
-"""
 
 
 
