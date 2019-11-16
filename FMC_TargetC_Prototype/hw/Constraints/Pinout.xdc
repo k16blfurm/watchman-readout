@@ -90,13 +90,7 @@ set_property PACKAGE_PIN N15 [get_ports SHOUT]
 set_property PACKAGE_PIN L15 [get_ports SIN]
 set_property PACKAGE_PIN L14 [get_ports SCLK]
 
-set_property PACKAGE_PIN P14 [get_ports SSTIN_P]
-set_property PACKAGE_PIN R14 [get_ports SSTIN_N]
-set_property PACKAGE_PIN M19 [get_ports WL_CLK_P]
-set_property PACKAGE_PIN M20 [get_ports WL_CLK_N]
 
-set_property PACKAGE_PIN K14 [get_ports HSCLK_P]
-set_property PACKAGE_PIN J14 [get_ports HSCLK_N]
 # ----------------------------------------------------------------------------
 # IOSTANDARD Constraints
 #
@@ -153,6 +147,8 @@ set_property IOSTANDARD LVCMOS25 [get_ports DO_3]
 
 set_property IOSTANDARD LVDS_25 [get_ports SSTIN_P]
 set_property IOSTANDARD LVDS_25 [get_ports SSTIN_N]
+set_property PACKAGE_PIN P14 [get_ports SSTIN_P]
+set_property PACKAGE_PIN R14 [get_ports SSTIN_N]
 set_property IOSTANDARD LVDS_25 [get_ports MONTIMING_P]
 set_property IOSTANDARD LVDS_25 [get_ports MONTIMING_N]
 
@@ -192,9 +188,12 @@ set_property IOSTANDARD LVCMOS25 [get_ports SIN]
 
 set_property IOSTANDARD LVDS_25 [get_ports HSCLK_P]
 set_property IOSTANDARD LVDS_25 [get_ports HSCLK_N]
+set_property PACKAGE_PIN K14 [get_ports HSCLK_P]
+set_property PACKAGE_PIN J14 [get_ports HSCLK_N]
 set_property IOSTANDARD LVDS_25 [get_ports WL_CLK_P]
 set_property IOSTANDARD LVDS_25 [get_ports WL_CLK_N]
+set_property PACKAGE_PIN M19 [get_ports WL_CLK_P]
+set_property PACKAGE_PIN M20 [get_ports WL_CLK_N]
 
-set_property DIFF_TERM TRUE [get_ports MONTIMING_N]
-set_property DIFF_TERM TRUE [get_ports MONTIMING_P]
+
 

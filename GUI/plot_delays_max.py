@@ -5,13 +5,13 @@ import pandas as pd
 import os
 from scipy.optimize import curve_fit
 from matplotlib import rc
-fileName = '/home/idlab-52/salvador_fork/fix_WR_address/watchman-readout/GUI/data/sinewave_sstoutfb_59.txt'
+fileName = './data/sinewave_sstoutfb_59.txt'
 vadjn = list(range(2600,2700,5))
 #vadjn = list(np.zeros(10))
 
 #### Data parameters
 rango = 1  # number of steps in delay values for the waveform generator
-repeticiones = 100 # Number of waveforms for the same delay value
+repeticiones = 1 # Number of waveforms for the same delay value
 
 
 
@@ -56,10 +56,10 @@ for i in range(0,rango,1):
 		
 
 	#plt.xticks(np.arange(200,384,10))       
-        plt.xlim(210, 375)
-        plt.ylim(-200,200)
+     #   plt.xlim(210, 375)
+     #   plt.ylim(-200,200)
         
-        plt.yticks(np.arange(-100,301,100))       
+     #   plt.yticks(np.arange(-100,301,100))       
         plt.grid(True, linestyle='--', linewidth=1)
         
         maxPos.append( df[k].idxmax() )
@@ -68,8 +68,8 @@ for i in range(0,rango,1):
      
        # std_3windows += np.std(df[k][0:96])
         plt.title('delay = {} ns'.format(i), fontsize=18, color='b')
-        for j in range(0,int(32*nmbrWindows*10),32):
-            plt.axvline(j-1, color='k', linewidth=2)
+     #   for j in range(0,int(32*nmbrWindows*10),32):
+     #       plt.axvline(j-1, color='k', linewidth=2)
     std3windowsList.append(std_3windows/repeticiones)
     textstr = 'std3windows={:10.2f}'.format(std_3windows/repeticiones)
 #    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,verticalalignment='top', bbox=props)

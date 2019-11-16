@@ -65,7 +65,7 @@ set run_remote_bd_flow 1
 if { $run_remote_bd_flow == 1 } {
   # Set the reference directory for source file relative paths (by default 
   # the value is script directory path)
-  set origin_dir ./salvador_fork/fix_WR_address/watchman-readout/FMC_TargetC_Prototype/hw/bd
+  set origin_dir ./salvador_fork/fixTImingFirmware/watchman-readout/FMC_TargetC_Prototype/hw/bd
 
   # Use origin directory path location variable, if specified in the tcl shell
   if { [info exists ::origin_dir_loc] } {

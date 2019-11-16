@@ -154,6 +154,7 @@ architecture arch_imp of TC_ClockManagementV3 is
 	signal GrayCounter_intl : std_logic_vector(59 downto 0);
 	signal clkFbOut_WL, clkFbOut : std_logic;
 	signal clkFbIn_WL, clkFbIn : std_logic;
+	signal axi_clk_intl:std_logic;
 
 begin
 
@@ -234,11 +235,11 @@ begin
          O => clkFbIn
    );
 
-	BUFG_OUTCLK100 : BUFG
-	port map (
-    	I => Clk100MHzRaw,
-    	O => Clk100MHz_bufg
-	);
+--	BUFG_OUTCLK100 : BUFG
+--	port map (
+--    	I => Clk100MHzRaw,
+--    	O => Clk100MHz_bufg
+--	);
 
 	BUFG_OUTCLK150 : BUFG
 	port map (
@@ -291,19 +292,20 @@ begin
 
 	--CLK500MHz_intl <= '0' when locked_intl = '0' else CLK500MHzraw;
 	CLK125MHz_intl <= '0' when locked_intl = '0' else CLK125MHz_bufg;
-
-	RDAD_CLK_intl <= '0' when locked_intl = '0' else Clk100MHz_bufg;
-
-	SCLK_intl <= '0' when locked_intl = '0' else Clk100MHz_bufg;
-
-	HSCLK_intl <= '0' when locked_intl = '0' else Clk100MHz_bufg;
-
-	WL_CLK_intl <= '0' when locked_intl = '0' else Clk100MHz_bufg;
+	
 
 	SSTIN_intl <= '0' when locked_intl = '0' else SSTIN_bufg;
 
 
+--	RDAD_CLK_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
 
+--	SCLK_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
+
+--	HSCLK_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
+
+--	WL_CLK_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
+
+    --axi_clk_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
 
 
 
@@ -374,18 +376,8 @@ SyncBit_reset125MHz: SyncBit
 
 	TimeCounter <= Timecounter_intl;
 
+
 	SSTIN_bufg	<= not Timecounter_intl(2);
-
-	ClockBus.SCLK 	<= SCLK_intl;
-	ClockBus.HSCLK	<= HSCLK_intl;
-	ClockBus.WL_CLK	<= WL_CLK_intl;
-	ClockBus.RDAD_CLK<= RDAD_CLK_intl;
-	ClockBus.CLK125MHz	<= CLK125MHz_intl;
-	ClockBus.SSTIN	<= SSTIN_intl;
-	ClockBus.AXI_CLK <= AXI_Clk;
-
-
-	PLL_LOCKED <= locked_intl; -- signal to use in TARGETC_Control.vhd for registers
 
 	OBUFDF_SSTIN : OBUFDS
 	generic map(
@@ -397,6 +389,8 @@ SyncBit_reset125MHz: SyncBit
 
 		I	=> SSTIN_intl
 	);
+	
+
 
 	OBUFDF_WL_CLK : OBUFDS
 	generic map(
@@ -406,7 +400,7 @@ SyncBit_reset125MHz: SyncBit
 		O	=> WL_CLK_P,
 		OB	=> WL_CLK_N,
 
-		I	=> WL_CLK_intl
+		I	=> AXI_CLK
 	);
 
 	OBUFDF_HSCLK : OBUFDS
@@ -419,5 +413,22 @@ SyncBit_reset125MHz: SyncBit
 
 		I	=> HSCLKdif
 	);
+	
+	
+	-- CLOCK BUS OUTPUTS
+	
+    
+        ClockBus.SCLK     <= AXI_CLK;
+        ClockBus.HSCLK    <= AXI_CLK;
+        ClockBus.WL_CLK    <= AXI_CLK;
+        ClockBus.RDAD_CLK<= AXI_CLK;
+        
+        ClockBus.CLK125MHz    <= CLK125MHz_intl;
+        ClockBus.SSTIN    <= SSTIN_intl;
+        ClockBus.AXI_CLK <= AXI_CLK;
+
+	
+		PLL_LOCKED <= locked_intl; -- signal to use in TARGETC_Control.vhd for registers
+
 
 end arch_imp;
