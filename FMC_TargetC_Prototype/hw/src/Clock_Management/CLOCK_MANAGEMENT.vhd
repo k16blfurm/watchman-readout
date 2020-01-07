@@ -162,78 +162,78 @@ begin
 
 	  -- MMCM to generate base and fast clocks
 	  -- fout = Fclkin x M/(D*O)
-	TC_CLK_MNG_inst : MMCME2_ADV
-	generic map(
-		BANDWIDTH			=> "OPTIMIZED",
-		COMPENSATION         => "BUF_IN",
-		STARTUP_WAIT         => false,
-		DIVCLK_DIVIDE        => 1,     -- D
-		CLKFBOUT_MULT_F      => 10.0,  -- M
-		CLKFBOUT_PHASE       => 0.000,
-		CLKFBOUT_USE_FINE_PS => false,
-		CLKOUT0_DIVIDE_F       => 10.0, -- 169  M CLKO
-		CLKOUT0_PHASE        => 0.000,
-		CLKOUT0_DUTY_CYCLE   => 0.500,
-		CLKOUT0_USE_FINE_PS  => false,
-		--
-		CLKOUT1_DIVIDE      => 8, -- 169   -- O  changed from 4 to 10 to get 100MHz, 8 to get 125
-		CLKOUT1_PHASE        => 0.000,
-		CLKOUT1_DUTY_CYCLE   => 0.500,
-		CLKOUT1_USE_FINE_PS  => false,
-		--
-		CLKIN1_PERIOD        => 10.0,
-		--CLKIN2_PERIOD        => 10.0,
-		REF_JITTER1          => 0.010,
-		REF_JITTER2          => 0.010)
-	port map(
-		-- Output clocks
-		CLKFBOUT     => clkFbOut,
-		CLKFBOUTB    => open,
+--	TC_CLK_MNG_inst : MMCME2_ADV
+--	generic map(
+--		BANDWIDTH			=> "OPTIMIZED",
+--		COMPENSATION         => "BUF_IN",
+--		STARTUP_WAIT         => false,
+--		DIVCLK_DIVIDE        => 1,     -- D
+--		CLKFBOUT_MULT_F      => 1.0,  -- M 10.0 for 125 mhz from 100 mhz
+--		CLKFBOUT_PHASE       => 0.000,
+--		CLKFBOUT_USE_FINE_PS => false,
+--		CLKOUT0_DIVIDE_F       => 1.0, -- 169  M CLKO
+--		CLKOUT0_PHASE        => 0.000,
+--		CLKOUT0_DUTY_CYCLE   => 0.500,
+--		CLKOUT0_USE_FINE_PS  => false,
+--		--
+--		CLKOUT1_DIVIDE      => 1, -- 169   -- O  changed from 4 to 10 to get 100MHz, 8 to get 125
+--		CLKOUT1_PHASE        => 0.000,
+--		CLKOUT1_DUTY_CYCLE   => 0.500,
+--		CLKOUT1_USE_FINE_PS  => false,
+--		--
+--		CLKIN1_PERIOD        => 8.0,
+--		--CLKIN2_PERIOD        => 10.0,
+--		REF_JITTER1          => 0.010,
+--		REF_JITTER2          => 0.010)
+--	port map(
+--		-- Output clocks
+--		CLKFBOUT     => clkFbOut,
+--		CLKFBOUTB    => open,
 		
-		CLKOUT0      => Clk100MHzRaw,
-		CLKOUT0B     => open,
-		CLKOUT1      => CLK125MHzRaw,
+--		CLKOUT0      => Clk100MHzRaw,
+--		CLKOUT0B     => open,
+--		CLKOUT1      => CLK125MHzRaw,
 		
-		CLKOUT1B     => open,
-		CLKOUT2      => open,
-		CLKOUT2B     => open,
-		CLKOUT3      => open,
-		CLKOUT3B     => open,
-		CLKOUT4      => open,
-		CLKOUT5      => open,
-		CLKOUT6      => open,
-		-- Input clock control
-		CLKFBIN      => clkFbIn,
-		CLKIN1       => clk1,
-		CLKIN2       => '0',
-		-- Tied to always select the primary input clock
-		CLKINSEL     => '1',
-		-- Ports for dynamic reconfiguration
-		DADDR        => (others => '0'),
-		DCLK         => '0',
-		DEN          => '0',
-		DI           => (others => '0'),
-		DO           => open,
-		DRDY         => open,
-		DWE          => '0',
-		-- Ports for dynamic phase shift
-		PSCLK        => '0',
-		PSEN         => '0',
-		PSINCDEC     => '0',
-		PSDONE       => open,
-		-- Other control and status signals
-		LOCKED       => locked_general,
-		CLKINSTOPPED => open,
-		CLKFBSTOPPED => open,
-		PWRDWN       => '0',
-		RST          => rst
-	);
+--		CLKOUT1B     => open,
+--		CLKOUT2      => open,
+--		CLKOUT2B     => open,
+--		CLKOUT3      => open,
+--		CLKOUT3B     => open,
+--		CLKOUT4      => open,
+--		CLKOUT5      => open,
+--		CLKOUT6      => open,
+--		-- Input clock control
+--		CLKFBIN      => clkFbIn,
+--		CLKIN1       => clk1,
+--		CLKIN2       => '0',
+--		-- Tied to always select the primary input clock
+--		CLKINSEL     => '1',
+--		-- Ports for dynamic reconfiguration
+--		DADDR        => (others => '0'),
+--		DCLK         => '0',
+--		DEN          => '0',
+--		DI           => (others => '0'),
+--		DO           => open,
+--		DRDY         => open,
+--		DWE          => '0',
+--		-- Ports for dynamic phase shift
+--		PSCLK        => '0',
+--		PSEN         => '0',
+--		PSINCDEC     => '0',
+--		PSDONE       => open,
+--		-- Other control and status signals
+--		LOCKED       => locked_general,
+--		CLKINSTOPPED => open,
+--		CLKFBSTOPPED => open,
+--		PWRDWN       => '0',
+--		RST          => rst
+--	);
 
-   BUFG_FB : BUFG
-      port map (
-         I => clkFbOut,
-         O => clkFbIn
-   );
+--   BUFG_FB : BUFG
+--      port map (
+--         I => clkFbOut,
+--         O => clkFbIn
+--   );
 
 --	BUFG_OUTCLK100 : BUFG
 --	port map (
@@ -241,11 +241,11 @@ begin
 --    	O => Clk100MHz_bufg
 --	);
 
-	BUFG_OUTCLK150 : BUFG
-	port map (
-    	I => CLK125MHzRaw,
-    	O => CLK125MHz_bufg
-	);
+--	BUFG_OUTCLK150 : BUFG
+--	port map (
+--    	I => CLK125MHzRaw,
+--    	O => CLK125MHz_bufg
+--	);
 
 --SyncBitLocked125MHz: SyncBit
 --       generic map (
@@ -287,14 +287,12 @@ begin
 --              ); 
            
 
-	locked_intl <= 	'0' when locked_general = '0' else
-					'1';
-
+	locked_intl <= 	'1';
 	--CLK500MHz_intl <= '0' when locked_intl = '0' else CLK500MHzraw;
-	CLK125MHz_intl <= '0' when locked_intl = '0' else CLK125MHz_bufg;
+--	CLK125MHz_intl <= '0' when locked_intl = '0' else CLK125MHz_bufg;
 	
 
-	SSTIN_intl <= '0' when locked_intl = '0' else SSTIN_bufg;
+--	SSTIN_intl <= '0' when locked_intl = '0' else SSTIN_bufg;
 
 
 --	RDAD_CLK_intl <= '0' when locked_intl = '0' else Clk100MHzRaw;
@@ -331,24 +329,24 @@ begin
 	-- Output For Standard and LVDS
 
     
-SyncBit_reset125MHz: SyncBit
-       generic map (
-          SYNC_STAGES_G  => 2,
-          CLK_POL_G      => '1',
-          RST_POL_G      => '1',
-          INIT_STATE_G   => '0',
-          GATE_DELAY_G   => 1 ns
-       )
+--SyncBit_reset125MHz: SyncBit
+--       generic map (
+--          SYNC_STAGES_G  => 2,
+--          CLK_POL_G      => '1',
+--          RST_POL_G      => '1',
+--          INIT_STATE_G   => '0',
+--          GATE_DELAY_G   => 1 ns
+--       )
        
-       port map ( 
-          -- Clock and reset
-          clk  => CLK125MHz_bufg,
-          rst   => '0',
-          -- Incoming bit, asynchronous
-          asyncBit =>  nrst,
-          -- Outgoing bit, synced to clk
-          syncBit   => nrst_125MHz
-       ); 
+--       port map ( 
+--          -- Clock and reset
+--          clk  => CLK125MHz_bufg,
+--          rst   => '0',
+--          -- Incoming bit, asynchronous
+--          asyncBit =>  nrst,
+--          -- Outgoing bit, synced to clk
+--          syncBit   => nrst_125MHz
+--       ); 
 	
 
 	TimeCnt_inst : counter
@@ -356,8 +354,8 @@ SyncBit_reset125MHz: SyncBit
 		NBITS => 64
 	)
 	port map(
-		CLK 	=> CLK125MHz_intl,
-		RST => nrst_125MHz, 
+		CLK 	=> AXI_CLK,
+		RST => nrst, 
 		Q 	=> Timecounter_intl
 	);
 
@@ -377,7 +375,7 @@ SyncBit_reset125MHz: SyncBit
 	TimeCounter <= Timecounter_intl;
 
 
-	SSTIN_bufg	<= not Timecounter_intl(2);
+	SSTIN_intl	<= not Timecounter_intl(2);
 
 	OBUFDF_SSTIN : OBUFDS
 	generic map(
@@ -423,7 +421,7 @@ SyncBit_reset125MHz: SyncBit
         ClockBus.WL_CLK    <= AXI_CLK;
         ClockBus.RDAD_CLK<= AXI_CLK;
         
-        ClockBus.CLK125MHz    <= CLK125MHz_intl;
+        ClockBus.CLK125MHz    <= AXI_CLK;
         ClockBus.SSTIN    <= SSTIN_intl;
         ClockBus.AXI_CLK <= AXI_CLK;
 

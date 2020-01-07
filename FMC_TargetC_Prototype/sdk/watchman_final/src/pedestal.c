@@ -262,13 +262,15 @@ for (i=0; i<avg; i++ ){
 	     	}
 	     }
 
+for (window=0; window< 3; window++){
+	 for(sample = 0; sample <32;sample++){
+	 	printf("%d\r\n",data_raw[window][2][sample]);
+	 }
+	 for(sample = 0; sample <32;sample++){
+	 	printf("%d\r\n",pedestal[window][2][sample]);
+	 }
+}
 
-	 for(sample = 0; sample <32;sample++){
-	 	printf("%d\r\n",data_raw[0][2][sample]);
-	 }
-	 for(sample = 0; sample <32;sample++){
-	 	printf("%d\r\n",pedestal[0][2][sample]);
-	 }
 
 	 return XST_SUCCESS;
 

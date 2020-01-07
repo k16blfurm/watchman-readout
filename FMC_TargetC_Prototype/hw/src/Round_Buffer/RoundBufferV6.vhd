@@ -65,6 +65,58 @@ end RoundBufferV6;
 
 architecture implementation of RoundBufferV6 is
 
+
+
+component DummyTrigger is
+
+    port (
+
+  clk :            in  std_logic;
+  RST :             in  std_logic;
+  start_reg:	    in 	std_logic; 
+  Timestamp:        in T_timestamp;
+
+  trigger :         out std_logic
+
+);
+
+end component DummyTrigger;
+
+
+
+component circularBuffer is
+
+    port (
+    
+  clk :            in  std_logic;
+  RST :             in  std_logic;  
+  trigger :         in std_logic;
+  full_fifo :        in std_logic;          
+   windowStorage:     in std_logic; 
+ -- ptr_window :      out std_logic_vector(8 downto 0);
+ -- sstin :           out std_logic;
+--   wr:     out unsigned(8 downto 0);
+  enable_write :    out std_logic;
+    enable_write_fifo :    out std_logic;
+
+--  counter :          out std_logic_vector(2 downto 0);        
+  
+  RD_add:           out std_logic_vector(8 downto 0);
+    RD_add_fifo:           out std_logic_vector(8 downto 0);
+
+            
+  WR_RS:            out std_logic_vector(1 downto 0);
+
+  WR_CS:            out std_logic_vector(5 downto 0);
+    Timestamp:        in T_timestamp
+
+  
+
+);
+end component circularBuffer;
+
+
+
 	component WindowBrainV2 is
 		generic(
 			ADDRESS : integer := 0
@@ -118,12 +170,16 @@ architecture implementation of RoundBufferV6 is
 		CPUBus:			in 	std_logic_vector(10 downto 0);
 		CPUTime:		in	T_timestamp;
 		TriggerInfo:	in 	std_logic_vector(11 downto 0);
+		trigger:        in  std_logic_vector(3 downto 0);
+		-- Control Signals
+        CtrlBus_IxSL:    in     T_CtrlBus_IxSL;
 
 		-- FIFO out for Reading RDAD
 	    RDAD_ReadEn  :in  std_logic;
 	    RDAD_DataOut : out std_logic_vector(8 downto 0);
 	    RDAD_Empty	: out std_logic;
-
+        RDAD_Data_trig : in std_logic_vector(8 downto 0);
+        RDAD_WriteEn_trig: in std_logic;
 		-- FIFO for FiFoManager
 		AXI_ReadEn:	in	std_logic;
 		AXI_Time_DataOut : out std_logic_vector(63 downto 0);
@@ -223,7 +279,8 @@ end component CPU_CONTROLLERV3;
               syncBit     : out std_logic
            ); 
         end component;
-
+        
+     
 	-- -------------------------------------------------------------
 	-- SIGNALS
 	-- -------------------------------------------------------------
@@ -268,6 +325,24 @@ end component CPU_CONTROLLERV3;
 	signal ValidData_s, ValidReal_s : std_logic;
 	signal time_intl:			T_timestamp;
     signal nrst : std_logic;
+    
+    signal dummytrigger_s : std_logic;
+
+    signal RDAD_Data_s : std_logic_vector(8 downto 0);
+    signal RDAD_Data_fifo_s : std_logic_vector(8 downto 0);
+    
+    signal RDAD_Full_s:  std_logic;
+
+    signal RDAD_WrEn_s : std_logic;
+    signal RDAD_WrEn_fifo_s : std_logic;
+    signal WR_RS_S_trig:		std_logic_vector(1 downto 0);
+    signal WR_CS_S_trig:        std_logic_vector(5 downto 0);
+    signal WR_RS_S_user:		std_logic_vector(1 downto 0);
+    signal WR_CS_S_user:        std_logic_vector(5 downto 0);
+    signal trigger_s:        std_logic;
+
+--    signal windowStorage_s : std_logic;
+    
 	-- -------------------------------------------------------------
 	-- Constraints on Signals
 	-- -------------------------------------------------------------
@@ -299,142 +374,47 @@ end component CPU_CONTROLLERV3;
 	attribute DONT_TOUCH of PrevValid_s : signal is "TRUE";
 begin
 
-	-- --------------------------------------------------------------------------------
-	-- Unused signals from Bus
-	-- CtrlBus_OxSL.TC_BUS	<= (others => 'Z');
-	--
-	-- CtrlBus_OxSL.DO_BUS <= (others => (others => 'Z'));
-	-- CtrlBus_OxSL.BUSY	<= 'Z';
-	-- CtrlBus_OxSL.PLL_LOCKED <= 'Z';
-	--
-	-- CtrlBus_OxSL.SSvalid <= 'Z';
-	-- CtrlBus_OxSL.RAMP_CNT <= 'Z';
-	-- CtrlBus_OxSL.Cnt_AXIS <= (others => 'Z');
-	--
-	-- CtrlBus_OxSL.FIFOBusy <= 'Z';
-	-- CtrlBus_OxSL.WindowBusy <= 'Z';
-	-- --------------------------------------------------------------------------------
-
-	-- NEXTBus_intl_Delay <= transport NEXTBus_intl after 10 ns;
-	-- PREVBus_intl_Delay <= transport PREVBus_intl after 10 ns;
 
 
---	GEN_CPU : for I in 1 to (NBRWINDOWS-2) generate
---		CPUX : WindowBrainV2
---			generic map(
---				ADDRESS => I
---			)
---			Port map(
---			nrst			=> CtrlBus_IxSL.SW_nRST,
---			nclr				=> ValidReal_s,
---			CLK				=> ClockBus.CLK125MHz,
---			CPUBus 			=> Bus_intl,
+inst_DummyTriger: DummyTrigger
 
---			-- wr1_en 			=> wr1_en_bus(I),
---			-- wr2_en			=> wr2_en_bus(I),
+    port map (
 
---			--CurAddr			=> CurWindowCnt,
---			RealAddrBit			=> RealAddrBit_s(I),
---			--OldAddr			=> OldWindowCnt,
---			--OldAddrBit			=> OldAddrBit_s(I),
---			-- Previous Side
---			PREVBus_OUT 	=> PREVBus_intl(I),
---			NEXTBus_IN 		=> NEXTBus_intl(I-1),
---			--NEXTBus_IN 		=> NEXTBus_intl_delay(I-1),
+  clk =>            ClockBus.Clk125MHz ,
+  RST =>            nrst,
+  start_reg=>     CtrlBus_IxSL.WindowStorage,
+  Timestamp=>        Timestamp,
+ 
+  trigger =>       dummytrigger_s   
 
---			-- Next Side
---			PREVBus_IN 		=> PREVBus_intl(I+1),
---			--PREVBus_IN 		=> PREVBus_intl_delay(I+1),
---			NEXTBus_OUT 	=> NEXTBus_intl(I),
---			NextAddr		=> NextAddrBus(I),
---			PrevAddr		=> PrevAddrBus(I)
---			);
+);
 
---	end generate;
 
---	CPU0 : WindowBrainV2
---		generic map(
---			ADDRESS => 0
---		)
---		Port map(
---		nrst			=> CtrlBus_IxSL.SW_nRST,
---		nclr			=> ValidReal_s,
---		CLK				=> ClockBus.CLK125MHz,
---		CPUBus 			=> Bus_intl,
 
---		-- wr1_en 			=> wr1_en_bus(0),
---		-- wr2_en			=> wr2_en_bus(0),
+circBuffer: circularBuffer 
 
---		--CurAddr			=> CurWindowCnt,
---		RealAddrBit			=> RealAddrBit_s(0),
---		--OldAddr			=> OldWindowCnt,
---		--OldAddrBit			=> OldAddrBit_s(0),
+    port map(
+    
+  clk    =>          ClockBus.CLK125MHz  ,
+  RST    =>             nrst,  
+  trigger   =>        trigger_s ,
+  full_fifo   =>      RDAD_Full_s  ,    
+  windowStorage=>     CtrlBus_IxSL.WindowStorage,       
+  enable_write  =>   RDAD_WrEn_s ,  -- For fifo to pass RD_ADD
+    enable_write_fifo  =>   RDAD_WrEn_fifo_s ,  -- For fifo to pass RD_ADD
 
---		-- Previous Side
---		PREVBus_OUT 	=> PREVBus_intl(0),
---		NEXTBus_IN 		=> NEXTBus_intl(NBRWINDOWS-1),
---		--NEXTBus_IN 		=> NEXTBus_intl_delay(NBRWINDOWS-1),
+  RD_add    =>          RDAD_Data_s ,
+    RD_add_fifo    =>          RDAD_Data_fifo_s ,
 
---		-- Next Side
---		PREVBus_IN 		=> PREVBus_intl(1),
---		--PREVBus_IN 		=> PREVBus_intl_delay(1),
---		NEXTBus_OUT 	=> NEXTBus_intl(0),
+  WR_RS    =>           WR_RS_S_trig,
+  WR_CS   =>            WR_CS_S_trig,
+  Timestamp=>         Timestamp
+ -- ptr_window   =>         ,
+  -- sstin =>           out std_logic,
+ --   wr=>     out unsigned(8 downto 0);
+ --  counter   =>          out std_logic_vector(2 downto 0),
+);
 
---		NextAddr		=> NextAddrBus(0),
---		PrevAddr		=> PrevAddrBus(0)
---		);
-
---	CPULAST : WindowBrainV2
---		generic map(
---			ADDRESS => NBRWINDOWS-1
---		)
---		Port map(
---		nrst			=> CtrlBus_IxSL.SW_nRST,
---		nclr			=> ValidReal_s,
---		CLK				=> ClockBus.CLK125MHz,
-
---		CPUBus 			=> Bus_intl,
-
---		-- wr1_en 			=> wr1_en_bus(NBRWINDOWS-1),
---		-- wr2_en			=> wr2_en_bus(NBRWINDOWS-1),
-
---		--CurAddr			=> CurWindowCnt,
---		RealAddrBit			=> RealAddrBit_s(NBRWINDOWS-1),
---		--OldAddr			=> OldWindowCnt,
---		--OldAddrBit			=> OldAddrBit_s(NBRWINDOWS-1),
---		-- Previous Side
---		PREVBus_OUT 	=> PREVBus_intl(NBRWINDOWS-1),
---		NEXTBus_IN 		=> NEXTBus_intl(NBRWINDOWS-2),
---		--NEXTBus_IN 		=> NEXTBus_intl_delay(NBRWINDOWS-2),
-
---		-- Next Side
---		PREVBus_IN 		=> PREVBus_intl(0),
---		--PREVBus_IN 		=> PREVBus_intl_delay(0),
---		NEXTBus_OUT 	=> NEXTBus_intl(NBRWINDOWS-1),
-
---		NextAddr		=> NextAddrBus(NBRWINDOWS-1),
---		PrevAddr		=> PrevAddrBus(NBRWINDOWS-1)
---		);
-
---	NEXTADDR_ints : BIT_SELECTOR
---		Port map(
---		nrst 	=> CtrlBus_IxSL.SW_nRST,
---		nclr	=> ValidReal_s,
---		clk 	=> ClockBus.CLK125MHz,
---		data 	=> NextAddrBus,
---		valid 	=> NextValid_s,
---		addr 	=> NextAddr_s
---		);
-
---	PREVADDR_ints : BIT_SELECTOR
---		Port map(
---		nrst 	=> CtrlBus_IxSL.SW_nRST,
---		nclr	=> ValidReal_s,
---		clk 	=> ClockBus.CLK125MHz,
---		data 	=> PrevAddrBus,
---		valid 	=> PREVValid_s,
---		addr 	=> PREVAddr_s
---		);
 
 SyncBitNrst: SyncBit
        generic map (
@@ -477,8 +457,8 @@ SyncBitNrst: SyncBit
 			CPUTime		=> Time_intl,
 			TriggerInfo	=> TrigInfo_intl,
 
-			WR_RS_S			=> WR_RS_S,
-			WR_CS_S			=> WR_CS_S,
+			WR_RS_S			=> WR_RS_S_user,
+			WR_CS_S			=> WR_CS_S_user,
 
 			CtrlBus_IxSL => CtrlBus_IxSL,
 			ValidReal 	=> ValidReal_s,
@@ -516,6 +496,10 @@ SyncBitNrst: SyncBit
 		CPUBus		=> Bus_intl,
 		CPUTime		=> Time_intl,
 		TriggerInfo	=> TrigInfo_intl,
+		trigger=>       trigger,
+
+		  -- Control Signals
+        CtrlBus_IxSL => CtrlBus_IxSL ,
 
 		-- Overwatch
 		--NbrOfPackets	=> CtrlBus_OxSL.RBNbrOfPackets,
@@ -526,7 +510,11 @@ SyncBitNrst: SyncBit
 		RDAD_ReadEn  => RDAD_ReadEn,
 		RDAD_DataOut => RDAD_DataOut,
 		RDAD_Empty	=> 	RDAD_Empty,
-
+        RDAD_Data_trig => RDAD_Data_s,
+        RDAD_WriteEn_trig =>RDAD_WrEn_s,
+        
+        
+        
 		AXI_ReadEn			=> AXI_ReadEn,
 		AXI_Time_DataOut	=> AXI_Time_DataOut,
 		AXI_WdoAddr_DataOut	=> AXI_WdoAddr_DataOut,
@@ -546,6 +534,38 @@ SyncBitNrst: SyncBit
         address_is_zero => address_is_zero_out
 
         ); 
+
+
+
+	
+multiplex_WR:	process(ClockBus.CLK125MHz, nrst)
+        begin
+            if nrst = '0' then
+              WR_RS_S  <=  (others => '0');
+              WR_CS_S  <=  (others => '0');
+           
+            
+            else
+                if rising_edge(ClockBus.Clk125MHz) then
+                    if CtrlBus_IxSL.CPUMode = '0' then
+                         WR_RS_S  <=  WR_RS_S_user;
+                         WR_CS_S <=  WR_CS_S_user; 
+                    elsif CtrlBus_IxSL.CPUMode = '1' then
+                        WR_RS_S  <=  WR_RS_S_trig;
+                        WR_CS_S <=  WR_CS_S_trig; 
+                    else
+                        WR_RS_S  <=  (others => '0');
+                        WR_CS_S  <=  (others => '0');
+                         
+	                end if;
+	            end if;    
+	        end if;
+	end process;
+
+
+
+trigger_s <= '0' when trigger= "0000" else '1';
+
 
 
 end implementation;

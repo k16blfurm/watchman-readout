@@ -6,6 +6,7 @@
  */
 
 #include "udp_peripheral.h"
+#include "iic_DAC_LTC2657.h"
 
 /*********************** Global variables ****************/
 /*********************************************************/
@@ -77,6 +78,10 @@ extern int pedestalAvg;
 
 /** Value from the GUI for the number of windows for pedestal calculation   */
 extern int nmbrWindowsPed;
+
+///** Value from the GUI for voltage value for comparators and vped  */
+//extern int VPED_ANALOG;
+
 
 /****************************************************************************/
 /**
@@ -191,6 +196,7 @@ int command_parser(struct pbuf *p, char* return_buf){
 	int regVal_one_reg;
 	int regID_one_reg;
 	//int pedestalNmbrWindows;
+//	int temp;
 
 	while((start < (length-1)) && (flag_start == false)){
 		if((payload[start] == 0x55) && (payload[start+1] == 0xAA)) flag_start = true;
@@ -211,19 +217,19 @@ int command_parser(struct pbuf *p, char* return_buf){
 					regID = 1;
 					for(i = 4; i < (4 + 2*REGMAP_SIZE_UDP); i += 2){
 				//		if(regID <= TC_MISCDIG_REG || regID == TC_TPG_REG){
-						if(regID == 127){
-							regVal = payload[i]*256 + payload[i+1];
+				//		if(regID == 127){
+				//			regVal = payload[i]*256 + payload[i+1];
 				//			WriteRegister(regID, regVal);
-							WriteRegister(TC_FSTWINDOW_REG, regVal);
+				//			WriteRegister(TC_FSTWINDOW_REG, regVal);
 
-						}
+				//		}
 
 						regID++;
 					}
-					fstWindowValue = regVal;
+				//	fstWindowValue = regVal;
 					xil_printf("Command write_all_reg received\r\n");
 	//				xil_printf("regVal = %d\r\n", regVal);
-					xil_printf("FSTWINDOW = %d\r\n", regptr[151]);
+				//	xil_printf("FSTWINDOW = %d\r\n", regptr[151]);
 
 					return 6;
 				}
@@ -257,6 +263,7 @@ int command_parser(struct pbuf *p, char* return_buf){
 					}
 					else{
 						stream_flag = true;
+
 						xil_printf("Command start_stream received\r\n");
 						count_ttcps_timer = 0;
 						count_scu_timer = 0;
@@ -327,7 +334,7 @@ int command_parser(struct pbuf *p, char* return_buf){
 				//    xil_printf("regVal_one_reg = %d\r\n", regVal_one_reg);
 				    if(regID_one_reg == TC_FSTWINDOW_REG){
 				    	fstWindowValue = regVal_one_reg;
-						//xil_printf("FSTWINDOW = %d\r\n", regID_one_reg);
+						xil_printf("FSTWINDOW = %d\r\n", regVal_one_reg);
 
 				         }
 				    else if((regID_one_reg == TC_NBRWINDOW_REG)){
@@ -340,7 +347,19 @@ int command_parser(struct pbuf *p, char* return_buf){
 				    	delay_UpdateWR = regVal_one_reg;
 						xil_printf("delay_UpdateWR = %d\r\n", delay_UpdateWR);
 
-								   			         }
+//								   			         }
+//				    else if((regID_one_reg == DAC_VOLTAGE))
+//				      {
+//				          temp = (float) regVal_one_reg;
+//				       VPED_ANALOG = temp/100;
+
+				   if(DAC_LTC2657_SetChannelVoltage(DAC_VPED, VPED_ANALOG) != XST_SUCCESS){
+					   xil_printf("DAC: setting vped voltage failed!\r\n");
+					   return XST_FAILURE;
+				   }
+				   	   printf("VPED_ANALOG = %f\n", VPED_ANALOG);
+				   }
+
 				    else
 				    {
 				        WriteRegister(regID_one_reg, regVal_one_reg);

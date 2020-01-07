@@ -111,6 +111,8 @@
 /** @brief  Value of  TimeStamp.samplecnt to update the WR address, 8 to 15 (from falling edge to 8 ns before rising edge) */
 #define TC_Delay_UpdateWR		93
 
+#define DAC_VOLTAGE             94
+
 /** @brief  Test pattern generator Register */
 #define TC_TPG_REG				128
 

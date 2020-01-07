@@ -71,7 +71,10 @@ src/udp_peripheral.o src/udp_peripheral.o: ../src/udp_peripheral.c \
  ../src/utility.h ../src/file_hm.h \
  ../../watchman_final_bsp/ps7_cortexa9_0/include/ff.h \
  ../../watchman_final_bsp/ps7_cortexa9_0/include/integer.h \
- ../../watchman_final_bsp/ps7_cortexa9_0/include/ffconf.h
+ ../../watchman_final_bsp/ps7_cortexa9_0/include/ffconf.h \
+ ../src/iic_DAC_LTC2657.h \
+ ../../watchman_final_bsp/ps7_cortexa9_0/include/xiic.h \
+ ../../watchman_final_bsp/ps7_cortexa9_0/include/xiic_l.h
 
 ../src/udp_peripheral.h:
 
@@ -224,3 +227,9 @@ src/udp_peripheral.o src/udp_peripheral.o: ../src/udp_peripheral.c \
 ../../watchman_final_bsp/ps7_cortexa9_0/include/integer.h:
 
 ../../watchman_final_bsp/ps7_cortexa9_0/include/ffconf.h:
+
+../src/iic_DAC_LTC2657.h:
+
+../../watchman_final_bsp/ps7_cortexa9_0/include/xiic.h:
+
+../../watchman_final_bsp/ps7_cortexa9_0/include/xiic_l.h:

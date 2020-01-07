@@ -1,4 +1,3 @@
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -265,7 +264,27 @@ component SyncBuffer is
 	signal CH13_intl : std_logic_vector(11 downto 0);
 	signal CH14_intl : std_logic_vector(11 downto 0);
 	signal CH15_intl : std_logic_vector(11 downto 0);
+    attribute mark_debug : string;
+    
+--    attribute mark_debug of HSCLK: signal is "true";
+--    attribute mark_debug of SS_CNT_INTL: signal is "true";
+--    attribute mark_debug of RAMP: signal is "true";
+--    attribute mark_debug of RAMP_CNT: signal is "true";
+--    attribute mark_debug of RDAD_CLK: signal is "true";
+--    attribute mark_debug of RDAD_SIN: signal is "true";
+--    attribute mark_debug of RDAD_DIR: signal is "true";
+--    attribute mark_debug of CH0: signal is "true";
+--    attribute mark_debug of GCC_RESET: signal is "true";
+--    attribute mark_debug of SS_INCR: signal is "true";
+--    attribute mark_debug of WL_CNT_INTL: signal is "true";
+--    attribute mark_debug of DO: signal is "true";
 
+    
+
+
+
+
+	
 begin
 
 
@@ -611,10 +630,12 @@ begin
 
 						wlstate <= START;
 					when START =>
-						if(WL_CNT_INTL = x"03FF" ) then
+						if(WL_CNT_INTL = x"3ff" ) then
 							WL.valid <= '1';
 							WL.ready <= '0';
 							wlstate <= VALID;
+						    RAMP_intl <= '0';
+					    	GCC_RESET_intl <= '0';
 
 							WL_CNT_EN <= '0';
 						else
@@ -637,7 +658,7 @@ begin
 						--Enable FIFODIG for removing the window
 						DIG_WriteEn <= '0';
 
-						RAMP_intl <= '1';
+--						RAMP_intl <= '1';
 						--if (SS.response = '1') then
 						if (SS.response = '0') then
 							WL.busy <= '1';
@@ -652,13 +673,13 @@ begin
 						if (SS.busy = '1') then
 							DIG_WriteEn <= '0';
 							wlstate <= SAMPLE_END;
-							RAMP_intl <= '1';
+--							RAMP_intl <= '1';
 							WL_CNT_EN <= '0';
 						else
 							-- Sampling is finished
 							DIG_WriteEn <= '1';
 							wlstate <= RAMP_DISCH;
-							GCC_RESET_intl <= '1';
+							GCC_RESET_intl <= '0';
 							WL_CNT_EN <= '1';
 							RAMP_intl <= '0';
 						end if;
@@ -670,7 +691,7 @@ begin
 							WL.ready <= '1';
 							WL.valid <= '0';
 							wlstate <= IDLE;
-							GCC_RESET_intl <= '1';
+							GCC_RESET_intl <= '0';
 							WL_CNT_EN <= '0';
 						else
 							WL_CNT_EN <= '1';
@@ -848,7 +869,7 @@ begin
 							SS_INCR_intl <= '1';
 							--hsout_stm <= LOW_SET0;
 							SS_CNT_EN <= '1';
-							hsout_stm <= INCRWAIT;
+							hsout_stm <= LOW_SET0;
 
 							-- WDOTime	<= 	WDOTime_WL;
 							-- DIGTime <= 	DIGTime_WL;
@@ -861,18 +882,19 @@ begin
 							SS.response <= '1';
 							hsout_stm <= RESPREADY;
 						end if;
-					when INCRWAIT =>
-						SS_INCR_intl <= '1';
+--					when INCRWAIT =>
+--						SS_INCR_intl <= '1';
 
-						if SS_CNT_INTL > UNSIGNED(INCR_WAIT_PERIOD) then
-							SS_CNT_EN <= '0';
-							SS_RESET_intl <= '0';
-							hsout_stm <= LOW_SET0;
-						else
-							SS_CNT_EN <= '1';
-						end if;
+----						if SS_CNT_INTL = UNSIGNED(INCR_WAIT_PERIOD) then
+--                        SS_CNT_EN <= '0';
+--                        SS_RESET_intl <= '0';
+--                        hsout_stm <= LOW_SET0;
+----						else
+----							SS_CNT_EN <= '1';
+----							hsout_stm <= INCRWAIT;
+----						end if;
 					when LOW_SET0 =>
-						HSCLK_intl <= '0';
+						HSCLK_intl <= '1';   --'0'
 						if SSBitCnt = 0  then
 							SS_INCR_intl <= '1';
 						else
@@ -882,40 +904,41 @@ begin
 						hsout_stm <= LOW_SET1;
 					when LOW_SET1 =>
 						HSCLK_intl <= '1';
-						hsout_stm <= HIGH_SET1;
-					when HIGH_SET1 =>
-						SS_INCR_intl <= '0';
-						HSCLK_intl <= '1';
 						hsout_stm <= HIGH_SET0;
+				        SS_INCR_intl <= '0';
+
+--					when HIGH_SET1 =>
+--						HSCLK_intl <= '1';
+--						hsout_stm <= HIGH_SET0;
 					when HIGH_SET0 =>
 						-- SAmple the output of TARGETC
-						if SSBitCnt > 1 then
+						if SSBitCnt > 2 then
 
-							CH0_intl(SSBitCnt-2) <= DO(0);
-							CH1_intl(SSBitCnt-2) <= DO(1);
-							CH2_intl(SSBitCnt-2) <= DO(2);
-							CH3_intl(SSBitCnt-2) <= DO(3);
+							CH0_intl(SSBitCnt-3) <= DO(0);
+							CH1_intl(SSBitCnt-3) <= DO(1);
+							CH2_intl(SSBitCnt-3) <= DO(2);
+							CH3_intl(SSBitCnt-3) <= DO(3);
 
-							CH4_intl(SSBitCnt-2) <= DO(4);
-							CH5_intl(SSBitCnt-2) <= DO(5);
-							CH6_intl(SSBitCnt-2) <= DO(6);
-							CH7_intl(SSBitCnt-2) <= DO(7);
+							CH4_intl(SSBitCnt-3) <= DO(4);
+							CH5_intl(SSBitCnt-3) <= DO(5);
+							CH6_intl(SSBitCnt-3) <= DO(6);
+							CH7_intl(SSBitCnt-3) <= DO(7);
 
-							CH8_intl(SSBitCnt-2) <= DO(8);
-							CH9_intl(SSBitCnt-2) <= DO(9);
-							CH10_intl(SSBitCnt-2) <=DO(10);
-							CH11_intl(SSBitCnt-2) <= DO(11);
+							CH8_intl(SSBitCnt-3) <= DO(8);
+							CH9_intl(SSBitCnt-3) <= DO(9);
+							CH10_intl(SSBitCnt-3) <=DO(10);
+							CH11_intl(SSBitCnt-3) <= DO(11);
 
-							CH12_intl(SSBitCnt-2) <= DO(12);
-							CH13_intl(SSBitCnt-2) <= DO(13);
-							CH14_intl(SSBitCnt-2) <= DO(14);
-							CH15_intl(SSBitCnt-2) <= DO(15);
+							CH12_intl(SSBitCnt-3) <= DO(12);
+							CH13_intl(SSBitCnt-3) <= DO(13);
+							CH14_intl(SSBitCnt-3) <= DO(14);
+							CH15_intl(SSBitCnt-3) <= DO(15);
 
 						end if;
 
 						HSCLK_intl <= '0';
 
-						if SSBitCnt = 13 then
+						if SSBitCnt = 14 then
 						--if SSBitCnt = 13 then
 						--if SSBitCnt = 11 then
 							hsout_stm <= REQUEST;
@@ -926,7 +949,7 @@ begin
 						else
 							SS.valid <= '0';
 							SS.busy <= '1';
-							hsout_stm <= LOW_SET0;
+							hsout_stm <= LOW_SET1;
 							SSBitCnt <= SSBitCnt + 1;
 						end if;
 						--WLvalidAck <= '0';
@@ -961,7 +984,7 @@ begin
 								SScnt <= SScnt + 1;
 								if(SScnt < 31) then
 									--hsout_stm <= LOW_SET0;
-									hsout_stm	<= INCRWAIT;
+									hsout_stm	<= LOW_SET0;
 									SS.busy <= '1';
 								else
 									--SS_RESET_intl <= '1';

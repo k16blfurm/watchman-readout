@@ -68,13 +68,15 @@ int get_15_windows_fct(void){
 
 	/* First window */
 	window_start = fstWindowValue;
-
+    usleep(10);
+    printf("fstWindowValue %d \r\n", fstWindowValue);
 	/* Number of windows */
 	//nmbrWindows = 16;
 
 	/* Give the element's address to the DMA */
-	XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
-
+	 XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
+	 Xil_DCacheInvalidateRange((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
+    usleep(10);
 	/* Initiate transfer and measure */
 	regptr[TC_FSTWINDOW_REG] = fstWindowValue;
 	regptr[TC_NBRWINDOW_REG] = nmbrWindows;
@@ -86,7 +88,8 @@ int get_15_windows_fct(void){
 
 	for(window =window_start ; window<nmbrWindows+window_start; window++){
 
-		if(window != window_start) XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
+	//	if(window != window_start) XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
+		XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
 
 		/* Wait on DMA transfer to be done */
 		timeout = 200000; // Timeout of 10 sec
@@ -136,6 +139,7 @@ int get_15_windows_fct(void){
 			return XST_FAILURE;
 		}
 		else flag_axidma_rx_done = false;
+  //      xil_printf("wdo_id=%d \r\n", (uint16_t)tmp_ptr-> data.data_struct.wdo_id );
 
 		/* Test the returned values */
 		if(tmp_ptr->data.data_struct.wdo_id != window){
@@ -154,7 +158,7 @@ int get_15_windows_fct(void){
 			for(i=0; i<16; i++){
 				for(j=0; j<32; j++){
 					/* Pedestal subtraction */
-					data_tmp = (uint16_t) (tmp_ptr->data.data_struct.data[i][j]-  pedestal[window][i][j]+ offset_avoid_negative);
+					data_tmp = (uint16_t) (tmp_ptr->data.data_struct.data[i][j]);//-  pedestal[window][i][j]+ offset_avoid_negative);
 
 					frame_buf[index++] = (char)data_tmp;
 				    //printf("int_number = %d\r\n ", (char)(int_number));
@@ -228,6 +232,8 @@ int get_windowsRaw(int startWindow, int nmbrofWindows){
 
 		for(window =window_start ; window<nmbrofWindows+window_start; window++){
 
+			//XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
+
 			if(window != window_start) XAxiDma_SimpleTransfer_hm((UINTPTR)tmp_ptr->data.data_array, SIZE_DATA_ARRAY_BYT);
 
 			/* Wait on DMA transfer to be done */
@@ -278,6 +284,7 @@ int get_windowsRaw(int startWindow, int nmbrofWindows){
 				return XST_FAILURE;
 			}
 			else flag_axidma_rx_done = false;
+     //       xil_printf("wdo_id=%d \r\n", (uint16_t)tmp_ptr-> data.data_struct.wdo_id );
 
 			/* Test the returned values */
 			if(tmp_ptr->data.data_struct.wdo_id != window){
@@ -291,8 +298,8 @@ int get_windowsRaw(int startWindow, int nmbrofWindows){
 					for(j=0; j<32; j++){
 						data_raw[window][i][j] += (uint16_t)(tmp_ptr->data.data_struct.data[i][j]);// + VPED_DIGITAL - pedestal[window][i][j]);
                         if ((uint16_t)(tmp_ptr->data.data_struct.data[i][j]) == 0){
-                        	printf("Value= 0");
-                        	usleep(300);
+                //        	printf("Value= 0");
+                 //       	usleep(300);
                         }
 					}
 				}

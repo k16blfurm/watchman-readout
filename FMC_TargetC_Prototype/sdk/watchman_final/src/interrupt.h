@@ -49,8 +49,8 @@
 #define WDT_DEVICE_ID		XPAR_SCUWDT_0_DEVICE_ID
 /** @brief ID of watchdog interrupt */
 #define WDT_IRPT_INTR		XPAR_SCUWDT_INTR
-/** @brief Value to load in watchdog's counter (= 2sec | 0x13FFFFFF = 1sec)*/
-#define WDT_LOAD_VALUE		0x27FFFFFE
+/** @brief Value to load in watchdog's counter (| 0x13FFFFFF = 1sec)*/
+#define WDT_LOAD_VALUE		0xc7fffff6  //10 sec
 /** @brief Value for reset counter of lwIP connection */
 #define RESET_RX_CNTR_LIMIT	400
 

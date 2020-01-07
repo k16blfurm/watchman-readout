@@ -1,0 +1,8 @@
+
+*.swp
+
+*.swo
+
+watchmanLog.txt
+
+GUI/__pycache__/

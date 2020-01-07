@@ -653,7 +653,7 @@ begin
 		--RST 	=> CtrlBusOut_intl.SW_nRST,
 
 		DISCH_PERIOD	=> x"0064",
-		INCR_WAIT_PERIOD => x"0032",
+		INCR_WAIT_PERIOD => x"0000",
 
 		ClockBus	=> ClockBus_intl,
 		--TimeCounter	=> timecounter_intl,
@@ -838,6 +838,7 @@ SyncBitCNT_CLR: SyncBit
 	nTrigD <= not TrigD;
 
 	Trigger_intl <= nTrigD & nTrigC & nTrigB & nTrigA;
+--	Trigger_intl <= TrigD & TrigC & TrigB & TrigA;
 
 	TestStream <= CtrlBusOut_intl.TestStream;
 
@@ -871,7 +872,7 @@ end process;
 --end process;
 
 	
-	BB5 <= ClockBus_intl.SSTIN;
+	BB5 <= CtrlBusOut_intl.WindowStorage;
    -- BB2 <= CtrlBusIn_intl.RAMP_CNT;
 	BB4 <= CtrlBusIn_intl.SSvalid;
 	BB3 <= MONTIMING_inverted;

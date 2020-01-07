@@ -37,11 +37,12 @@
 /** @brief Vped value, but in digital (2.5V <=> 2047 -> 1.75V <=> 1434 or 1.25V <=> 1024)*/
 #define VPED_DIGITAL	1434
 /** @brief Vped voltage to set up in DAC (in float)*/
-#define VPED_ANALOG		1.75
+#define VPED_ANALOG		1.75 //1.75
 /** @brief Threshold voltage to set up in DAC for the comparator of the trigger system (in float)*/
-#define THRESHOLD_CMP	1.25
-/** @brief Treshold used to select the gain stage in function correct_data to send (digital value)*/
+#define THRESHOLD_CMP	1.70//1.78 //1.25/** @brief Treshold used to select the gain stage in function correct_data to send (digital value)*/
 #define THRESHOLD_PULSE	500
+
+
 
 /*** Type definition *************************************************/
 /*********************************************************************/

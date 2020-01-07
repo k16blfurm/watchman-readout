@@ -25,6 +25,9 @@ extern volatile bool flag_ttcps_timer;
 extern volatile bool flag_scu_timer;
 /** @brief Instance of the device watchdog */
 extern XScuWdt WdtScuInstance;
+///** Value from the GUI for voltage value for comparators and vped  */
+//extern int VPED_ANALOG;
+
 
 /****************************************************************************/
 /**

@@ -97,6 +97,8 @@ volatile bool simul_err_exception_flag;
 volatile bool simul_err_assertion_flag;
 /** @brief Flag raised for UDP connection restart */
  volatile bool restart_UDP_flag;
+// /** Value from the GUI for voltage value for comparators and vped  */
+//int VPED_ANALOG;
 
 
 

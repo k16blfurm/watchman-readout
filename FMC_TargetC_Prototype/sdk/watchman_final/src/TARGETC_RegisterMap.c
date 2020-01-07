@@ -22,6 +22,7 @@ extern int* regptr;
  * @note	-
  *
  ************************************************************* */
+
 void SetTargetCRegisters(void){
 
 	for(int i=0; i<64; i++){
@@ -76,7 +77,7 @@ void SetTargetCRegisters(void){
 	xil_printf("Turning DLL ON \r\n");
 	WriteRegister(TC_QBIAS_REG,	0);// 1,300 Meeting 07/02/2019
 	WriteRegister(TC_VANBUFF_REG,	1042);	// 1,300 Meeting 07/02/2019, 1062  0x44C
-	sleep(30);
+	sleep(3);
 
 	WriteRegister(TC_QBIAS_REG,	1500);    // 1300, // 1,300 Meeting 07/02/2019 0x426// stable at 528, 08/20/2019
 	WriteRegister(TC_VANBUFF_REG,	0);	// // 1,300 Meeting 07/02/2019
